@@ -11,30 +11,6 @@ from forecasting.config.schema import DataConfig
 logger = logging.getLogger(__name__)
 
 
-def fill_missing_dates(
-    df: pd.DataFrame,
-    date_col: str,
-    frequency: str = "D",
-) -> pd.DataFrame:
-    """Ensure every date in the range is present, fill gaps with 0.
-
-    Args:
-        df: DataFrame with a date column already set.
-        date_col: Name of the date column.
-        frequency: Pandas frequency string.
-
-    Returns:
-        DataFrame with complete date range, missing values filled with 0.
-    """
-    full_range = pd.date_range(
-        start=df[date_col].min(),
-        end=df[date_col].max(),
-        freq=frequency,
-    )
-    df = df.set_index(date_col).reindex(full_range).fillna(0)
-    df.index.name = date_col
-    return df.reset_index()
-
 
 def pivot_by_store(
     df: pd.DataFrame,
