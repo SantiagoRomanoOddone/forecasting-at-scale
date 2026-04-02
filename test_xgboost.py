@@ -28,8 +28,8 @@ data_config = DataConfig(
     store_col="pdv_anonimizado",
     sep=";",
 )
-
 df = load_data(data_config)
+df = df[['pdv_anonimizado', 'fecha_comercial', 'codigo_barras_sku', 'cant_vta']]
 
 # 2. Prepare tabular data for one product
 product = 7897395060107

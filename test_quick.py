@@ -30,6 +30,7 @@ data_config = DataConfig(
 )
 
 df = load_data(data_config)
+df = df[['pdv_anonimizado', 'fecha_comercial', 'codigo_barras_sku', 'cant_vta']]
 
 # 2. Pick a product with high sales in test period
 product = 7897395060107
