@@ -63,3 +63,12 @@ class BaseModel(ABC):
     @property
     def is_fitted(self) -> bool:
         return self._fitted
+
+    @property
+    def data_format(self) -> str:
+        """Return the data format this model expects.
+
+        Returns:
+            'gluonts' for time series models or 'tabular' for tree-based.
+        """
+        return "gluonts"

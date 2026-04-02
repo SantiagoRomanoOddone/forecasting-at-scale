@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 from forecasting.config.schema import DataConfig
+from forecasting.features.temporal import add_temporal_features
 
 logger = logging.getLogger(__name__)
 
@@ -85,3 +86,54 @@ def prepare_series(
     )
 
     return pivot
+
+
+def prepare_tabular(
+    df: pd.DataFrame,
+    config: DataConfig,
+    product_filter: Optional[object] = None,
+    category_filter: Optional[str] = None,
+) -> pd.DataFrame:
+    """Filter data and prepare flat tabular format for tree-based models.
+
+    Adds temporal features and one-hot encodes store IDs.
+
+    Args:
+        df: Full dataframe.
+        config: Data configuration.
+        product_filter: Specific product code to filter.
+        category_filter: Category value to filter.
+
+    Returns:
+        Flat DataFrame with temporal features and one-hot encoded stores.
+    """
+    subset = df.copy()
+
+    if product_filter is not None:
+        subset = subset[subset[config.product_col] == product_filter]
+        logger.info("Filtered product=%s -> %d rows", product_filter, len(subset))
+
+    if category_filter is not None and config.category_col is not None:
+        subset = subset[subset[config.category_col] == category_filter]
+        logger.info("Filtered category=%s -> %d rows", category_filter, len(subset))
+
+    if subset.empty:
+        raise ValueError(
+            f"No data after filtering (product={product_filter}, "
+            f"category={category_filter})"
+        )
+
+    # Add temporal features
+    subset = add_temporal_features(subset, config.date_col)
+
+    # One-hot encode stores
+    store_dummies = pd.get_dummies(
+        subset[config.store_col], prefix="store"
+    ).astype(int)
+    subset = pd.concat([subset, store_dummies], axis=1)
+
+    subset = subset.sort_values(
+        [config.store_col, config.date_col]
+    ).reset_index(drop=True)
+
+    return subset

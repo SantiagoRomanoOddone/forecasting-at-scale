@@ -25,3 +25,24 @@ def create_temporal_features(dates: pd.DatetimeIndex) -> np.ndarray:
     }
 
     return np.array(list(features.values()))
+
+
+def add_temporal_features(df: pd.DataFrame, date_col: str) -> pd.DataFrame:
+    """Add temporal feature columns to a flat DataFrame.
+
+    Args:
+        df: DataFrame with a datetime column.
+        date_col: Name of the date column.
+
+    Returns:
+        DataFrame with new temporal columns added.
+    """
+    dates = pd.to_datetime(df[date_col])
+    df = df.copy()
+    df["month"] = dates.dt.month
+    df["day"] = dates.dt.day
+    df["day_of_week"] = dates.dt.dayofweek
+    df["week_of_year"] = dates.dt.isocalendar().week.astype(int).values
+    df["day_of_year"] = dates.dt.dayofyear
+
+    return df

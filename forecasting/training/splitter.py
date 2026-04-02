@@ -42,3 +42,34 @@ def split_by_date(
     )
 
     return train, val, test
+
+
+def split_tabular_by_date(
+    df: pd.DataFrame,
+    date_col: str,
+    prediction_length: int,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Split flat tabular data into train, validation, and test sets.
+
+    Args:
+        df: Flat DataFrame with a date column.
+        date_col: Name of the date column.
+        prediction_length: Number of days for the test/val window.
+
+    Returns:
+        Tuple of (train, validation, test) DataFrames.
+    """
+    dates = sorted(df[date_col].unique())
+    test_start = dates[-prediction_length]
+    val_start = dates[-2 * prediction_length]
+
+    train = df[df[date_col] < val_start]
+    val = df[(df[date_col] >= val_start) & (df[date_col] < test_start)]
+    test = df[df[date_col] >= test_start]
+
+    logger.info(
+        "Tabular split: train=%d rows, val=%d rows, test=%d rows",
+        len(train), len(val), len(test),
+    )
+
+    return train, val, test
