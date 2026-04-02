@@ -122,6 +122,14 @@ def prepare_tabular(
             f"No data after filtering (product={product_filter}, "
             f"category={category_filter})"
         )
+    
+    # Ensure continuous daily dates per store (same logic as pivot_by_store for series models)
+    subset = ensure_daily_continuity_per_store(
+        subset,
+        config.date_col,
+        config.store_col,
+        config.target_col,
+    )
 
     # Add temporal features
     subset = add_temporal_features(subset, config.date_col)
@@ -137,3 +145,34 @@ def prepare_tabular(
     ).reset_index(drop=True)
 
     return subset
+
+
+
+def ensure_daily_continuity_per_store(
+    df: pd.DataFrame,
+    date_col: str,
+    store_col: str,
+    target_col: str,
+) -> pd.DataFrame:
+    """Ensure each store has a continuous daily date range.
+
+    Missing dates are inserted and target values are filled with 0.
+    This keeps tabular models consistent with the pivot time-series logic.
+    """
+    df[date_col] = pd.to_datetime(df[date_col])
+
+    df = (
+        df
+        .set_index(date_col)
+        .groupby(store_col, group_keys=False)
+        .apply(lambda x: x.reindex(
+            pd.date_range(x.index.min(), x.index.max(), freq="D")
+        ))
+        .reset_index()
+        .rename(columns={"index": date_col})
+    )
+
+    df[target_col] = df[target_col].fillna(0)
+    df[store_col] = df[store_col].ffill()
+
+    return df
