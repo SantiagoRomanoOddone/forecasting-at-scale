@@ -33,7 +33,8 @@ df = load_data(data_config)
 df = df[['pdv_anonimizado', 'fecha_comercial', 'codigo_barras_sku', 'cant_vta']]
 
 # 2. Pick a product with high sales in test period
-product = 7897395060107
+# product = 7897395060107
+product = 7896045506934
 pivot = prepare_series(df, data_config, product_filter=product)
 print(f"\nPivot shape: {pivot.shape} (days x stores)")
 print(pivot.head())
@@ -51,9 +52,8 @@ test_ds = build_list_dataset(test, start, "D")
 # 5. Train (no tuning, just defaults, few epochs)
 model = SimpleFeedforwardModel(
     prediction_length=prediction_length,
-    context_length=prediction_length * 3,
+    context_length=prediction_length * 6,
     num_stores=len(pivot.columns),
-    frequency="D",
     max_epochs=5,
 )
 model.fit(train_ds, val_ds)

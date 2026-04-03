@@ -32,7 +32,8 @@ df = load_data(data_config)
 df = df[['pdv_anonimizado', 'fecha_comercial', 'codigo_barras_sku', 'cant_vta']]
 
 # 2. Prepare tabular data for one product
-product = 7897395060107
+# product = 7897395060107
+product = 7896045506934
 tabular = prepare_tabular(df, data_config, product_filter=product)
 print(f"\nTabular shape: {tabular.shape}")
 print(f"Feature columns: {[c for c in tabular.columns if c not in ['fecha_comercial', 'codigo_barras_sku', 'nome_sku', 'imp_vta', 'cant_vta', 'vol_vta', 'stock', 'pdv_anonimizado', 'qtd_conteudo_sku']]}")
@@ -44,7 +45,7 @@ train, val, test = split_tabular_by_date(tabular, "fecha_comercial", prediction_
 # 4. Train XGBoost (defaults, no tuning)
 model = XGBoostModel(
     prediction_length=prediction_length,
-    context_length=prediction_length * 3,
+    context_length=prediction_length * 6,
     target_col="cant_vta",
     date_col="fecha_comercial",
     store_col="pdv_anonimizado",
